@@ -1,13 +1,14 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Тест с вибрацией</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Telegram Mini App: Тест с вибрацией</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     button { margin: 5px; padding: 10px 20px; font-size: 16px; }
   </style>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <h1>Выберите вариант теста</h1>
@@ -23,44 +24,61 @@
       3: ["б","б","г","а","г","в","в","в","б","г","в","в","а","б","в","в","а","а","в","а","в","в","б","а","б","в","б","в","в","в","в","а","г","а","а","а","в","б","а","б","б","б","б","а","в"]
     };
 
-    // Паттерны вибрации для каждого возможного ответа
-    const vibrationPatterns = {
-      "а": [200],
-      "б": [200, 100, 200],
-      "в": [200, 100, 200, 100, 200],
-      "г": [200, 100, 200, 100, 200, 100, 200]
-    };
+    // Функция для вызова тактильной обратной связи на основе типа ответа
+    function triggerFeedback(answer) {
+      if (!Telegram.WebApp || !Telegram.WebApp.triggerHapticFeedback) {
+        console.warn("Haptic feedback API недоступен.");
+        return;
+      }
+      switch(answer) {
+        case "а":
+          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'success' });
+          break;
+        case "б":
+          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'warning' });
+          break;
+        case "в":
+          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'error' });
+          break;
+        case "г":
+          Telegram.WebApp.triggerHapticFeedback({ type: 'impact', impact_style: 'heavy' });
+          break;
+        default:
+          console.warn("Неизвестный ответ:", answer);
+      }
+    }
 
     // Функция запуска теста для выбранного варианта
     function startTest(variant) {
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
-
-      // Интервал между вопросами (в мс)
-      const intervalMs = 3000; 
+      const intervalMs = 3000; // Интервал между вопросами
 
       // Останавливаем предыдущие интервалы, если есть
-      if(window.testInterval) {
+      if (window.testInterval) {
         clearInterval(window.testInterval);
       }
 
       window.testInterval = setInterval(() => {
-        if(currentIndex >= selectedAnswers.length) {
+        if (currentIndex >= selectedAnswers.length) {
           clearInterval(window.testInterval);
-          alert("Тест завершён");
+          Telegram.WebApp.showAlert("Тест завершён");
           return;
         }
 
         const answer = selectedAnswers[currentIndex];
-        const pattern = vibrationPatterns[answer] || [];
-        if(navigator.vibrate) {
-          navigator.vibrate(pattern);
-        }
-
+        triggerFeedback(answer);
         console.log(`Вопрос ${currentIndex + 1}: ответ ${answer}`);
         currentIndex++;
       }, intervalMs);
     }
+
+    // Инициализация Telegram Web App
+    window.addEventListener('DOMContentLoaded', () => {
+      if (Telegram.WebApp) {
+        Telegram.WebApp.ready();
+      }
+    });
   </script>
 </body>
 </html>
