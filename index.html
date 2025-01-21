@@ -19,7 +19,6 @@
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // Ответы для каждого варианта
     const answers = {
       1: ["г","г","б","г","а","б","б","б","б","г","а","г","г","а","а","а","в","а","а","г","в","а","а","в","а","г","в","г","в","в","а","б","г","в","а","г","а","б","б","г","б","в","в","б","а"],
       2: ["а","г","г","а","г","а","в","в","б","г","б","а","а","а","б","в","в","б","г","б","б","б","а","б","а","г","г","б","в","а","б","г","б","а","в","б","б","г","б","б","г","а","а","а","б"],
@@ -27,7 +26,25 @@
     };
 
     const hapticFeedback = window.Telegram.WebApp.HapticFeedback;
-    let currentTestInterval = null;
+
+    let stopLoop = false; // Флаг для остановки текущего цикла вопросов
+
+    // Функция задержки
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    // Асинхронная функция для вибрации по цифрам с задержками
+    async function vibrateForNumber(questionNum) {
+      const digits = String(questionNum).split('').map(Number);
+      for (let digit of digits) {
+        for (let j = 0; j < digit; j++) {
+          hapticFeedback.impactOccurred('heavy');
+          await sleep(300); // задержка между вибрациями внутри одной цифры
+        }
+        await sleep(500); // задержка между разными цифрами
+      }
+    }
 
     function triggerFeedback(answer) {
       switch(answer) {
@@ -48,30 +65,13 @@
       }
     }
 
-    function vibrateForNumber(questionNum) {
-      // Разбить номер вопроса на отдельные цифры
-      const digits = String(questionNum).split('');
-      // Для каждой цифры выполнить вибрацию соответствующее количество раз
-      digits.forEach(digit => {
-        const times = parseInt(digit, 10);
-        for(let j = 0; j < times; j++) {
-          hapticFeedback.impactOccurred('heavy');
-        }
-      });
-    }
-
-    function startTest(variant) {
-      // Остановка предыдущего теста, если он идет
-      if (currentTestInterval) {
-        clearInterval(currentTestInterval);
-      }
-
+    async function processQuestions(variant) {
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
-      const intervalMs = 5000; // Интервал между циклами вопросов
 
-      currentTestInterval = setInterval(() => {
-        // Если достигнут конец массива, начинаем сначала
+      // Бесконечный цикл по вопросам до остановки
+      while(!stopLoop) {
+        // Возврат в начало массива после достижения конца
         if (currentIndex >= selectedAnswers.length) {
           currentIndex = 0;
         }
@@ -81,36 +81,41 @@
 
         // Повторяем процедуру дважды для каждого вопроса
         for(let repeat = 0; repeat < 2; repeat++) {
-          // Вибрации для номера вопроса по цифрам
-          vibrateForNumber(questionNum);
+          // Вибрации по цифрам номера вопроса с задержками
+          await vibrateForNumber(questionNum);
+          await sleep(500); // небольшая задержка после завершения вибраций номера
           // Вибрация для ответа
           triggerFeedback(answer);
+          await sleep(1000); // задержка после вибрации ответа
         }
 
         console.log(`Вопрос ${questionNum}: ответ ${answer}`);
         currentIndex++;
-      }, intervalMs);
-    }
-
-    function testHaptic() {
-      // Остановка любого запущенного теста
-      if (currentTestInterval) {
-        clearInterval(currentTestInterval);
+        await sleep(2000); // задержка между вопросами
       }
-
-      let count = 20; // Увеличенное количество повторений для долгой вибрации
-      let i = 0;
-      const intervalMs = 500;
-      const testInterval = setInterval(() => {
-        hapticFeedback.impactOccurred('heavy');
-        i++;
-        if(i >= count) {
-          clearInterval(testInterval);
-        }
-      }, intervalMs);
     }
 
-    // Привязка функций к глобальному объекту window для использования в onclick
+    async function startTest(variant) {
+      // Остановка предыдущего цикла, если он идет
+      stopLoop = true;
+      await sleep(100); // небольшая задержка для гарантии завершения предыдущего цикла
+      stopLoop = false;
+      processQuestions(variant);
+    }
+
+    async function testHaptic() {
+      // Остановка любого запущенного теста
+      stopLoop = true;
+      await sleep(100);
+      stopLoop = false;
+
+      let count = 20;
+      for(let i = 0; i < count; i++) {
+        hapticFeedback.impactOccurred('heavy');
+        await sleep(500);
+      }
+    }
+
     window.startTest = startTest;
     window.testHaptic = testHaptic;
   </script>
