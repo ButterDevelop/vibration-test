@@ -79,6 +79,7 @@
     }
 
     function testHaptic() {
+	  alert("vibrate" in navigator);
       navigator.vibrate(200);
 	
       if(hapticFeedback.impactOccurred.isAvailable()) {
