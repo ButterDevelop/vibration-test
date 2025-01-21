@@ -14,6 +14,8 @@
   <button onclick="startTest(1)">Вариант 1</button>
   <button onclick="startTest(2)">Вариант 2</button>
   <button onclick="startTest(3)">Вариант 3</button>
+  <br><br>
+  <button onclick="testHaptic()">Тестовая вибрация</button>
 
   <script type="module">
     import { hapticFeedback } from 'https://unpkg.com/@telegram-apps/sdk?module';
@@ -27,7 +29,6 @@
 
     // Функция для вызова тактильной обратной связи на основе типа ответа
     function triggerFeedback(answer) {
-      // Проверяем доступность соответствующих методов перед вызовом
       switch(answer) {
         case "а":
           if(hapticFeedback.notificationOccurred.isAvailable()) {
@@ -60,7 +61,6 @@
       let currentIndex = 0;
       const intervalMs = 3000; // Интервал между вопросами
 
-      // Останавливаем предыдущие интервалы, если есть
       if (window.testInterval) {
         clearInterval(window.testInterval);
       }
@@ -77,6 +77,23 @@
         console.log(`Вопрос ${currentIndex + 1}: ответ ${answer}`);
         currentIndex++;
       }, intervalMs);
+    }
+
+    // Функция для тестовой длинной вибрации
+    function testHaptic() {
+      if(hapticFeedback.impactOccurred.isAvailable()) {
+        let count = 5; // Количество повторений
+        let i = 0;
+        const interval = setInterval(() => {
+          hapticFeedback.impactOccurred('heavy');
+          i++;
+          if(i >= count) {
+            clearInterval(interval);
+          }
+        }, 500); // Интервал между импульсами (500 мс)
+      } else {
+        alert("Haptic feedback не поддерживается.");
+      }
     }
   </script>
 </body>
