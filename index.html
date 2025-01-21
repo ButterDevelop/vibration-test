@@ -3,12 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Telegram Mini App: Тест с вибрацией</title>
+  <title>Telegram Mini App: Тест с тактильной обратной связью</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     button { margin: 5px; padding: 10px 20px; font-size: 16px; }
   </style>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
   <h1>Выберите вариант теста</h1>
@@ -16,7 +15,9 @@
   <button onclick="startTest(2)">Вариант 2</button>
   <button onclick="startTest(3)">Вариант 3</button>
 
-  <script>
+  <script type="module">
+    import { hapticFeedback } from 'https://unpkg.com/@telegram-apps/sdk?module';
+
     // Ответы для каждого варианта
     const answers = {
       1: ["г","г","б","г","а","б","б","б","б","г","а","г","г","а","а","а","в","а","а","г","в","а","а","в","а","г","в","г","в","в","а","б","г","в","а","г","а","б","б","г","б","в","в","б","а"],
@@ -26,22 +27,27 @@
 
     // Функция для вызова тактильной обратной связи на основе типа ответа
     function triggerFeedback(answer) {
-      if (!Telegram.WebApp || !Telegram.WebApp.triggerHapticFeedback) {
-        console.warn("Haptic feedback API недоступен.");
-        return;
-      }
+      // Проверяем доступность соответствующих методов перед вызовом
       switch(answer) {
         case "а":
-          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'success' });
+          if(hapticFeedback.notificationOccurred.isAvailable()) {
+            hapticFeedback.notificationOccurred('success');
+          }
           break;
         case "б":
-          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'warning' });
+          if(hapticFeedback.notificationOccurred.isAvailable()) {
+            hapticFeedback.notificationOccurred('warning');
+          }
           break;
         case "в":
-          Telegram.WebApp.triggerHapticFeedback({ type: 'notification', notification_type: 'error' });
+          if(hapticFeedback.notificationOccurred.isAvailable()) {
+            hapticFeedback.notificationOccurred('error');
+          }
           break;
         case "г":
-          Telegram.WebApp.triggerHapticFeedback({ type: 'impact', impact_style: 'heavy' });
+          if(hapticFeedback.impactOccurred.isAvailable()) {
+            hapticFeedback.impactOccurred('heavy');
+          }
           break;
         default:
           console.warn("Неизвестный ответ:", answer);
@@ -62,7 +68,7 @@
       window.testInterval = setInterval(() => {
         if (currentIndex >= selectedAnswers.length) {
           clearInterval(window.testInterval);
-          Telegram.WebApp.showAlert("Тест завершён");
+          alert("Тест завершён");
           return;
         }
 
@@ -72,13 +78,6 @@
         currentIndex++;
       }, intervalMs);
     }
-
-    // Инициализация Telegram Web App
-    window.addEventListener('DOMContentLoaded', () => {
-      if (Telegram.WebApp) {
-        Telegram.WebApp.ready();
-      }
-    });
   </script>
 </body>
 </html>
