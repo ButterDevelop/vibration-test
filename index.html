@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Тест с вибрацией</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    button { margin: 5px; padding: 10px 20px; font-size: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Выберите вариант теста</h1>
+  <button onclick="startTest(1)">Вариант 1</button>
+  <button onclick="startTest(2)">Вариант 2</button>
+  <button onclick="startTest(3)">Вариант 3</button>
+
+  <script>
+    // Ответы для каждого варианта
+    const answers = {
+      1: ["г","г","б","г","а","б","б","б","б","г","а","г","г","а","а","а","в","а","а","г","в","а","а","в","а","г","в","г","в","в","а","б","г","в","а","г","а","б","б","г","б","в","в","б","а"],
+      2: ["а","г","г","а","г","а","в","в","б","г","б","а","а","а","б","в","в","б","г","б","б","б","а","б","а","г","г","б","в","а","б","г","б","а","в","б","б","г","б","б","г","а","а","а","б"],
+      3: ["б","б","г","а","г","в","в","в","б","г","в","в","а","б","в","в","а","а","в","а","в","в","б","а","б","в","б","в","в","в","в","а","г","а","а","а","в","б","а","б","б","б","б","а","в"]
+    };
+
+    // Паттерны вибрации для каждого возможного ответа
+    const vibrationPatterns = {
+      "а": [200],
+      "б": [200, 100, 200],
+      "в": [200, 100, 200, 100, 200],
+      "г": [200, 100, 200, 100, 200, 100, 200]
+    };
+
+    // Функция запуска теста для выбранного варианта
+    function startTest(variant) {
+      const selectedAnswers = answers[variant];
+      let currentIndex = 0;
+
+      // Интервал между вопросами (в мс)
+      const intervalMs = 3000; 
+
+      // Останавливаем предыдущие интервалы, если есть
+      if(window.testInterval) {
+        clearInterval(window.testInterval);
+      }
+
+      window.testInterval = setInterval(() => {
+        if(currentIndex >= selectedAnswers.length) {
+          clearInterval(window.testInterval);
+          alert("Тест завершён");
+          return;
+        }
+
+        const answer = selectedAnswers[currentIndex];
+        const pattern = vibrationPatterns[answer] || [];
+        if(navigator.vibrate) {
+          navigator.vibrate(pattern);
+        }
+
+        console.log(`Вопрос ${currentIndex + 1}: ответ ${answer}`);
+        currentIndex++;
+      }, intervalMs);
+    }
+  </script>
+</body>
+</html>
