@@ -36,7 +36,7 @@
       const digits = String(questionNum).split('').map(Number);
       for (let digit of digits) {
         for (let j = 0; j < digit; j++) {
-          hapticFeedback.impactOccurred('heavy');
+          hapticFeedback.notificationOccurred('success');
           await sleep(300);
         }
         await sleep(500);
