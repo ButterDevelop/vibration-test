@@ -37,9 +37,9 @@
       for (let digit of digits) {
         for (let j = 0; j < digit; j++) {
           hapticFeedback.notificationOccurred('success');
-          await sleep(300);
+          await sleep(1000);
         }
-        await sleep(500);
+        await sleep(3000);
       }
     }
 
@@ -57,7 +57,7 @@
       }
       for(let i = 0; i < times; i++) {
         hapticFeedback.selectionChanged();
-        await sleep(300);  // задержка между повторениями
+        await sleep(1000);  // задержка между повторениями
       }
     }
 
@@ -75,9 +75,9 @@
 
         for(let repeat = 0; repeat < 2; repeat++) {
           await vibrateForNumber(questionNum);
-          await sleep(500);
-          await triggerFeedback(answer);
           await sleep(1000);
+          await triggerFeedback(answer);
+          await sleep(2000);
         }
 
         console.log(`Вопрос ${questionNum}: ответ ${answer}`);
