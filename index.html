@@ -27,6 +27,7 @@
     };
 
     const hapticFeedback = window.Telegram.WebApp.HapticFeedback;
+    let currentTestInterval = null;
 
     function triggerFeedback(answer) {
       switch(answer) {
@@ -48,41 +49,50 @@
     }
 
     function startTest(variant) {
+      // Остановка предыдущего теста, если он идет
+      if (currentTestInterval) {
+        clearInterval(currentTestInterval);
+      }
+
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
       const intervalMs = 3000; // Интервал между вопросами
 
-      if (window.testInterval) {
-        clearInterval(window.testInterval);
-      }
-
-      window.testInterval = setInterval(() => {
+      currentTestInterval = setInterval(() => {
+        // Если достигнут конец массива, начинаем сначала
         if (currentIndex >= selectedAnswers.length) {
-          clearInterval(window.testInterval);
-          alert("Тест завершён");
-          return;
+          currentIndex = 0;
         }
 
         const answer = selectedAnswers[currentIndex];
+        // Повторяем текущий вопрос дважды
+        triggerFeedback(answer);
         triggerFeedback(answer);
         console.log(`Вопрос ${currentIndex + 1}: ответ ${answer}`);
+
         currentIndex++;
       }, intervalMs);
     }
 
     function testHaptic() {
-      let count = 5; // Количество повторений
+      // Остановка любого запущенного теста
+      if (currentTestInterval) {
+        clearInterval(currentTestInterval);
+      }
+
+      let count = 20; // Увеличенное количество повторений для долгой вибрации
       let i = 0;
-      const interval = setInterval(() => {
+      const intervalMs = 500; 
+      const testInterval = setInterval(() => {
         hapticFeedback.impactOccurred('heavy');
         i++;
         if(i >= count) {
-          clearInterval(interval);
+          clearInterval(testInterval);
         }
-      }, 500); // Интервал между импульсами (500 мс)
+      }, intervalMs);
     }
 
-    // Привязка функций к глобальному объекту window
+    // Привязка функций к глобальному объекту window для использования в onclick
     window.startTest = startTest;
     window.testHaptic = testHaptic;
   </script>
