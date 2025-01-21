@@ -27,7 +27,6 @@
       3: ["б","б","г","а","г","в","в","в","б","г","в","в","а","б","в","в","а","а","в","а","в","в","б","а","б","в","б","в","в","в","в","а","г","а","а","а","в","б","а","б","б","б","б","а","в"]
     };
 
-    // Функция для вызова тактильной обратной связи на основе типа ответа
     function triggerFeedback(answer) {
       switch(answer) {
         case "а":
@@ -55,7 +54,6 @@
       }
     }
 
-    // Функция запуска теста для выбранного варианта
     function startTest(variant) {
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
@@ -79,7 +77,6 @@
       }, intervalMs);
     }
 
-    // Функция для тестовой длинной вибрации
     function testHaptic() {
       if(hapticFeedback.impactOccurred.isAvailable()) {
         let count = 5; // Количество повторений
@@ -95,6 +92,10 @@
         alert("Haptic feedback не поддерживается.");
       }
     }
+
+    // Привязка функций к глобальному объекту window
+    window.startTest = startTest;
+    window.testHaptic = testHaptic;
   </script>
 </body>
 </html>
