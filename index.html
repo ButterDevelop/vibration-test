@@ -79,6 +79,8 @@
     }
 
     function testHaptic() {
+      navigator.vibrate(200);
+	
       if(hapticFeedback.impactOccurred.isAvailable()) {
         let count = 5; // Количество повторений
         let i = 0;
