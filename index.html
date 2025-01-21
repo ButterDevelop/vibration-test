@@ -26,42 +26,38 @@
     };
 
     const hapticFeedback = window.Telegram.WebApp.HapticFeedback;
+    let stopLoop = false;
 
-    let stopLoop = false; // Флаг для остановки текущего цикла вопросов
-
-    // Функция задержки
     function sleep(ms) {
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
-    // Асинхронная функция для вибрации по цифрам с задержками
     async function vibrateForNumber(questionNum) {
       const digits = String(questionNum).split('').map(Number);
       for (let digit of digits) {
         for (let j = 0; j < digit; j++) {
           hapticFeedback.impactOccurred('heavy');
-          await sleep(300); // задержка между вибрациями внутри одной цифры
+          await sleep(300);
         }
-        await sleep(500); // задержка между разными цифрами
+        await sleep(500);
       }
     }
 
-    function triggerFeedback(answer) {
+    // Обновленная асинхронная функция triggerFeedback для повторов в зависимости от ответа
+    async function triggerFeedback(answer) {
+      let times;
       switch(answer) {
-        case "а":
-          hapticFeedback.notificationOccurred('success');
-          break;
-        case "б":
-          hapticFeedback.notificationOccurred('warning');
-          break;
-        case "в":
-          hapticFeedback.notificationOccurred('error');
-          break;
-        case "г":
-          hapticFeedback.impactOccurred('heavy');
-          break;
-        default:
+        case "а": times = 1; break;
+        case "б": times = 2; break;
+        case "в": times = 3; break;
+        case "г": times = 4; break;
+        default: 
           console.warn("Неизвестный ответ:", answer);
+          return;
+      }
+      for(let i = 0; i < times; i++) {
+        hapticFeedback.impactOccurred('heavy');
+        await sleep(300);  // задержка между повторениями
       }
     }
 
@@ -69,9 +65,7 @@
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
 
-      // Бесконечный цикл по вопросам до остановки
       while(!stopLoop) {
-        // Возврат в начало массива после достижения конца
         if (currentIndex >= selectedAnswers.length) {
           currentIndex = 0;
         }
@@ -79,32 +73,27 @@
         const answer = selectedAnswers[currentIndex];
         const questionNum = currentIndex + 1;
 
-        // Повторяем процедуру дважды для каждого вопроса
         for(let repeat = 0; repeat < 2; repeat++) {
-          // Вибрации по цифрам номера вопроса с задержками
           await vibrateForNumber(questionNum);
-          await sleep(500); // небольшая задержка после завершения вибраций номера
-          // Вибрация для ответа
-          triggerFeedback(answer);
-          await sleep(1000); // задержка после вибрации ответа
+          await sleep(500);
+          await triggerFeedback(answer);
+          await sleep(1000);
         }
 
         console.log(`Вопрос ${questionNum}: ответ ${answer}`);
         currentIndex++;
-        await sleep(2000); // задержка между вопросами
+        await sleep(2000);
       }
     }
 
     async function startTest(variant) {
-      // Остановка предыдущего цикла, если он идет
       stopLoop = true;
-      await sleep(100); // небольшая задержка для гарантии завершения предыдущего цикла
+      await sleep(100);
       stopLoop = false;
       processQuestions(variant);
     }
 
     async function testHaptic() {
-      // Остановка любого запущенного теста
       stopLoop = true;
       await sleep(100);
       stopLoop = false;
