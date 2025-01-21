@@ -17,7 +17,7 @@
   <br><br>
   <button onclick="testHaptic()">Тестовая вибрация</button>
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script> 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     // Ответы для каждого варианта
     const answers = {
@@ -48,6 +48,18 @@
       }
     }
 
+    function vibrateForNumber(questionNum) {
+      // Разбить номер вопроса на отдельные цифры
+      const digits = String(questionNum).split('');
+      // Для каждой цифры выполнить вибрацию соответствующее количество раз
+      digits.forEach(digit => {
+        const times = parseInt(digit, 10);
+        for(let j = 0; j < times; j++) {
+          hapticFeedback.impactOccurred('heavy');
+        }
+      });
+    }
+
     function startTest(variant) {
       // Остановка предыдущего теста, если он идет
       if (currentTestInterval) {
@@ -56,7 +68,7 @@
 
       const selectedAnswers = answers[variant];
       let currentIndex = 0;
-      const intervalMs = 3000; // Интервал между вопросами
+      const intervalMs = 5000; // Интервал между циклами вопросов
 
       currentTestInterval = setInterval(() => {
         // Если достигнут конец массива, начинаем сначала
@@ -65,11 +77,17 @@
         }
 
         const answer = selectedAnswers[currentIndex];
-        // Повторяем текущий вопрос дважды
-        triggerFeedback(answer);
-        triggerFeedback(answer);
-        console.log(`Вопрос ${currentIndex + 1}: ответ ${answer}`);
+        const questionNum = currentIndex + 1;
 
+        // Повторяем процедуру дважды для каждого вопроса
+        for(let repeat = 0; repeat < 2; repeat++) {
+          // Вибрации для номера вопроса по цифрам
+          vibrateForNumber(questionNum);
+          // Вибрация для ответа
+          triggerFeedback(answer);
+        }
+
+        console.log(`Вопрос ${questionNum}: ответ ${answer}`);
         currentIndex++;
       }, intervalMs);
     }
@@ -82,7 +100,7 @@
 
       let count = 20; // Увеличенное количество повторений для долгой вибрации
       let i = 0;
-      const intervalMs = 500; 
+      const intervalMs = 500;
       const testInterval = setInterval(() => {
         hapticFeedback.impactOccurred('heavy');
         i++;
